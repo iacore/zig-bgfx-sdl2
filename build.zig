@@ -1,14 +1,19 @@
-const Builder = @import("std").build.Builder;
+const Builder = @import("std").Build;
 
 pub fn build(b: *Builder) void {
     const target = b.standardTargetOptions(.{});
-    const mode = b.standardReleaseOptions();
-    const exe = b.addExecutable("game", "src/main.zig");
+    const optimize = b.standardOptimizeOption(.{});
+    const exe = b.addExecutable(.{
+        .name = "game",
+        .root_source_file = .{ .path = "src/main.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
 
     const git_sub_cmd = [_][]const u8{ "git", "submodule", "update", "--init", "--recursive" };
     const fetch_subs = b.addSystemCommand(&git_sub_cmd);
 
-    exe.addIncludeDir("src");
+    exe.addIncludePath(.{ .path = "src" });
 
     exe.linkLibC();
     exe.linkSystemLibrary("c++");
@@ -16,7 +21,7 @@ pub fn build(b: *Builder) void {
     exe.linkSystemLibrary("SDL2");
     exe.linkSystemLibrary("GL");
 
-    comptime const cxx_options = [_][]const u8{
+    const cxx_options = [_][]const u8{
         "-fno-strict-aliasing",
         "-fno-exceptions",
         "-fno-rtti",
@@ -26,46 +31,44 @@ pub fn build(b: *Builder) void {
     //exe.defineCMacro("BGFX_CONFIG_DEBUG=1");
 
     // bx
-    comptime const bx = "submodules/bx/";
-    exe.addIncludeDir(bx ++ "include/");
-    exe.addIncludeDir(bx ++ "3rdparty/");
-    exe.addCSourceFile(bx ++ "src/amalgamated.cpp", &cxx_options);
+    const bx = "submodules/bx/";
+    exe.addIncludePath(.{ .path = bx ++ "include/" });
+    exe.addIncludePath(.{ .path = bx ++ "3rdparty/" });
+    exe.addCSourceFile(.{ .file = .{ .path = bx ++ "src/amalgamated.cpp" }, .flags = &cxx_options });
 
     // bimg
-    comptime const bimg = "submodules/bimg/";
-    exe.addIncludeDir(bimg ++ "include/");
-    exe.addIncludeDir(bimg ++ "3rdparty/");
-    exe.addIncludeDir(bimg ++ "3rdparty/astc-codec/");
-    exe.addIncludeDir(bimg ++ "3rdparty/astc-codec/include/");
-    exe.addCSourceFile(bimg ++ "src/image.cpp", &cxx_options);
-    exe.addCSourceFile(bimg ++ "src/image_gnf.cpp", &cxx_options);
+    const bimg = "submodules/bimg/";
+    exe.addIncludePath(.{ .path = bimg ++ "include/" });
+    exe.addIncludePath(.{ .path = bimg ++ "3rdparty/" });
+    exe.addIncludePath(.{ .path = bimg ++ "3rdparty/astc-codec/" });
+    exe.addIncludePath(.{ .path = bimg ++ "3rdparty/astc-codec/include/" });
+    exe.addCSourceFile(.{ .file = .{ .path = bimg ++ "src/image.cpp" }, .flags = &cxx_options });
+    exe.addCSourceFile(.{ .file = .{ .path = bimg ++ "src/image_gnf.cpp" }, .flags = &cxx_options });
     // FIXME: Glob?
-    exe.addCSourceFile(bimg ++ "3rdparty/astc-codec/src/decoder/astc_file.cc", &cxx_options);
-    exe.addCSourceFile(bimg ++ "3rdparty/astc-codec/src/decoder/codec.cc", &cxx_options);
-    exe.addCSourceFile(bimg ++ "3rdparty/astc-codec/src/decoder/endpoint_codec.cc", &cxx_options);
-    exe.addCSourceFile(bimg ++ "3rdparty/astc-codec/src/decoder/footprint.cc", &cxx_options);
-    exe.addCSourceFile(bimg ++ "3rdparty/astc-codec/src/decoder/integer_sequence_codec.cc", &cxx_options);
-    exe.addCSourceFile(bimg ++ "3rdparty/astc-codec/src/decoder/intermediate_astc_block.cc", &cxx_options);
-    exe.addCSourceFile(bimg ++ "3rdparty/astc-codec/src/decoder/logical_astc_block.cc", &cxx_options);
-    exe.addCSourceFile(bimg ++ "3rdparty/astc-codec/src/decoder/partition.cc", &cxx_options);
-    exe.addCSourceFile(bimg ++ "3rdparty/astc-codec/src/decoder/physical_astc_block.cc", &cxx_options);
-    exe.addCSourceFile(bimg ++ "3rdparty/astc-codec/src/decoder/quantization.cc", &cxx_options);
-    exe.addCSourceFile(bimg ++ "3rdparty/astc-codec/src/decoder/weight_infill.cc", &cxx_options);
+    exe.addCSourceFile(.{ .file = .{ .path = bimg ++ "3rdparty/astc-codec/src/decoder/astc_file.cc" }, .flags = &cxx_options });
+    exe.addCSourceFile(.{ .file = .{ .path = bimg ++ "3rdparty/astc-codec/src/decoder/codec.cc" }, .flags = &cxx_options });
+    exe.addCSourceFile(.{ .file = .{ .path = bimg ++ "3rdparty/astc-codec/src/decoder/endpoint_codec.cc" }, .flags = &cxx_options });
+    exe.addCSourceFile(.{ .file = .{ .path = bimg ++ "3rdparty/astc-codec/src/decoder/footprint.cc" }, .flags = &cxx_options });
+    exe.addCSourceFile(.{ .file = .{ .path = bimg ++ "3rdparty/astc-codec/src/decoder/integer_sequence_codec.cc" }, .flags = &cxx_options });
+    exe.addCSourceFile(.{ .file = .{ .path = bimg ++ "3rdparty/astc-codec/src/decoder/intermediate_astc_block.cc" }, .flags = &cxx_options });
+    exe.addCSourceFile(.{ .file = .{ .path = bimg ++ "3rdparty/astc-codec/src/decoder/logical_astc_block.cc" }, .flags = &cxx_options });
+    exe.addCSourceFile(.{ .file = .{ .path = bimg ++ "3rdparty/astc-codec/src/decoder/partition.cc" }, .flags = &cxx_options });
+    exe.addCSourceFile(.{ .file = .{ .path = bimg ++ "3rdparty/astc-codec/src/decoder/physical_astc_block.cc" }, .flags = &cxx_options });
+    exe.addCSourceFile(.{ .file = .{ .path = bimg ++ "3rdparty/astc-codec/src/decoder/quantization.cc" }, .flags = &cxx_options });
+    exe.addCSourceFile(.{ .file = .{ .path = bimg ++ "3rdparty/astc-codec/src/decoder/weight_infill.cc" }, .flags = &cxx_options });
 
     // bgfx
-    comptime const bgfx = "submodules/bgfx/";
-    exe.addIncludeDir(bgfx ++ "include/");
-    exe.addIncludeDir(bgfx ++ "3rdparty/");
-    exe.addIncludeDir(bgfx ++ "3rdparty/dxsdk/include/");
-    exe.addIncludeDir(bgfx ++ "3rdparty/khronos/");
-    exe.addIncludeDir(bgfx ++ "src/");
-    exe.addCSourceFile(bgfx ++ "src/amalgamated.cpp", &cxx_options);
+    const bgfx = "submodules/bgfx/";
+    exe.addIncludePath(.{ .path = bgfx ++ "include/" });
+    exe.addIncludePath(.{ .path = bgfx ++ "3rdparty/" });
+    exe.addIncludePath(.{ .path = bgfx ++ "3rdparty/dxsdk/include/" });
+    exe.addIncludePath(.{ .path = bgfx ++ "3rdparty/khronos/" });
+    exe.addIncludePath(.{ .path = bgfx ++ "src/" });
+    exe.addCSourceFile(.{ .file = .{ .path = bgfx ++ "src/amalgamated.cpp" }, .flags = &cxx_options });
 
-    exe.setTarget(target);
-    exe.setBuildMode(mode);
-    exe.install();
+    b.installArtifact(exe);
 
-    const run_cmd = exe.run();
+    const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());
 
     const run_step = b.step("run", "Run the app");
