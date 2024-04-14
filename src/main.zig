@@ -62,7 +62,7 @@ fn sdlSetWindow(window: *c.SDL_Window) !void {
 pub fn main() !void {
     _ = c.SDL_Init(0);
     defer c.SDL_Quit();
-    const window = c.SDL_CreateWindow("bgfx", c.SDL_WINDOWPOS_UNDEFINED, c.SDL_WINDOWPOS_UNDEFINED, 800, 600, c.SDL_WINDOW_SHOWN | c.SDL_WINDOW_RESIZABLE).?;
+    const window = c.SDL_CreateWindow("bgfx", c.SDL_WINDOWPOS_UNDEFINED, c.SDL_WINDOWPOS_UNDEFINED, 800, 600, c.SDL_WINDOW_SHOWN).?;
     defer c.SDL_DestroyWindow(window);
     try sdlSetWindow(window);
 
